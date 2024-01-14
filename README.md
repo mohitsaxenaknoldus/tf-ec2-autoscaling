@@ -17,21 +17,21 @@ Since there is no inbuilt metric for load average, each EC2 instance in the grou
 There is a custom user-data script that installs `awscli` in the machines and sets up a cron job that pushes the metric data after every 5 minutes.
 
 ```shell
-              #!/bin/bash
-              sudo apt-get update
-              sudo apt-get install -y awscli
-              sudo bash -c 'cat <<CUSTOM_SCRIPT > /tmp/publish_load_average.sh
-              #!/bin/bash
-              load_average=\$(uptime | awk -F"[a-z]:" "{ print \\\$2 }" | awk -F, "{ print \\\$3 }" | awk -F. "{ print \\\$1 }")
-              aws cloudwatch put-metric-data \\
-                --region us-east-1 \\
-                --metric-name LoadAverage \\
-                --namespace CustomMetrics \\
-                --dimensions InstanceId=\$(curl -s http://169.254.169.254/latest/meta-data/instance-id) \\
-                --value \$load_average
-              CUSTOM_SCRIPT'
-              sudo chmod +x /tmp/publish_load_average.sh
-              (crontab -l 2>/dev/null; echo "*/5 * * * * /bin/bash /tmp/publish_load_average.sh") | crontab -
+  #!/bin/bash
+  sudo apt-get update
+  sudo apt-get install -y awscli
+  sudo bash -c 'cat <<CUSTOM_SCRIPT > /tmp/publish_load_average.sh
+  #!/bin/bash
+  load_average=\$(uptime | awk -F"[a-z]:" "{ print \\\$2 }" | awk -F, "{ print \\\$3 }" | awk -F. "{ print \\\$1 }")
+  aws cloudwatch put-metric-data \\
+    --region us-east-1 \\
+    --metric-name LoadAverage \\
+    --namespace CustomMetrics \\
+    --dimensions InstanceId=\$(curl -s http://169.254.169.254/latest/meta-data/instance-id) \\
+    --value \$load_average
+  CUSTOM_SCRIPT'
+  sudo chmod +x /tmp/publish_load_average.sh
+  (crontab -l 2>/dev/null; echo "*/5 * * * * /bin/bash /tmp/publish_load_average.sh") | crontab -
 ```
 
 The Kernel level load average is derived through the `uptime` command and filtered using `awk`.
