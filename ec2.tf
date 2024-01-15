@@ -10,7 +10,7 @@ resource "aws_launch_configuration" "launch_config" {
               sudo apt-get install -y awscli
               sudo bash -c 'cat <<CUSTOM_SCRIPT > /tmp/publish_load_average.sh
               #!/bin/bash
-              load_average=\$(uptime | awk -F"[a-z]:" "{ print \\\$2 }" | awk -F, "{ print \\\$3 }" | awk -F. "{ print \\\$1 }")
+              load_average=\$(uptime | awk -F'load average: ' '{print $2}' | cut -d, -f2)
               aws cloudwatch put-metric-data \\
                 --region us-east-1 \\
                 --metric-name LoadAverage \\
